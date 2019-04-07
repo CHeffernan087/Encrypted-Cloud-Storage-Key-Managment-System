@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <head>
+{% load static %}
+			<link rel="stylesheet" href="{% static 'CSS/index.css'%}">
 <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -18,6 +20,20 @@
     <div style = "height:3vh;width:3vw;background-color:aqua" id = "clickme"></div>
   <input type="file" id="input">
 
+
+<div style = "float:right;height:30vh;width:30vw;">
+      <form class="box" method="post" action="" enctype="multipart/form-data">
+  <div class="box__input">
+    <input class="box__file" type="file" name="files[]" id="file" data-multiple-caption="{count} files selected" multiple />
+    <label for="file"><strong>Choose a file</strong><span class="box__dragndrop"> or drag it here</span>.</label>
+    <button class="box__button" type="submit">Upload</button>
+  </div>
+  <div class="box__uploading">Uploading&hellip;</div>
+  <div class="box__success">Done!</div>
+  <div class="box__error">Error! <span></span>.</div>
+</form>
+
+</div>
 
   <script>
 
@@ -40,12 +56,33 @@
             console.log(selectedFile)
            
             var reader = new FileReader();
-            var bin = reader.readAsArrayBuffer ( selectedFile )
-            console.log(bin)
+            //var bin = reader.readAsArrayBuffer ( selectedFile )
+        
 
             
-            var encrypted = KJUR.crypto.Cipher.encrypt("selectedFile", publicKey, "RSAOAEP")
-            console.log(encrypted)
+            
+
+
+            // Read the file
+            //reads the file and outputs a base 64 string
+              reader.readAsDataURL(selectedFile);
+            // Specify the handler for the `load` event
+              reader.onload = function (e) {
+               
+                //the results of reading in the file
+                var bytes = e.target.result;
+                //returns a hexadecimal encrypted string
+                var encrypted = KJUR.crypto.Cipher.encrypt(bytes, publicKey, "RSAOAEP")
+                console.log(encrypted)
+
+                //can decrypt a hexadecimal string using the private key
+                var decrypt = KJUR.crypto.Cipher.decrypt(encrypted, privateKey, "RSAOAEP")
+                console.log(decrypt)
+              }
+              
+              
+
+            
             //alert(encrypted)
         })
         
