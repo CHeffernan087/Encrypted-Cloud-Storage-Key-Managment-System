@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<head>
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+<script src="https://kjur.github.io/jsrsasign/jsrsasign-all-min.js"></script>
+</head>
+<body>
+    
+    <h1>This is tcomms baby</h1>
+      <form action = "/kms/submit" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="myfile">
+    <button type="submit">Upload</button>
+  </form>
+
+    <div style = "height:3vh;width:3vw;background-color:aqua" id = "clickme"></div>
+  <input type="file" id="input">
+
+
+  <script>
+
+
+
+    
+
+    var keyGen = KEYUTIL
+        var test = keyGen.generateKeypair("RSA", 2048)
+        var privateKey = test.prvKeyObj;
+        var publicKey = test.pubKeyObj;
+        console.log("keyObj : ",privateKey)
+
+        console.log("hasnt broken baby")
+
+    $("document").ready(function(){
+        $("#clickme").click(function(){
+           
+            const selectedFile = document.getElementById('input').files[0];
+            console.log(selectedFile)
+           
+            var reader = new FileReader();
+            var bin = reader.readAsArrayBuffer ( selectedFile )
+            console.log(bin)
+
+            
+            var encrypted = KJUR.crypto.Cipher.encrypt("selectedFile", publicKey, "RSAOAEP")
+            console.log(encrypted)
+            //alert(encrypted)
+        })
+        
+    })
+        
+
+
+    </script>
+</body>
