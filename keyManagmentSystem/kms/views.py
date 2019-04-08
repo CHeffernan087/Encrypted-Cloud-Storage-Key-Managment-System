@@ -17,6 +17,7 @@ import inspect, os
 from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES, PKCS1_OAEP
+import json
 
 
 print(inspect.getfile(inspect.currentframe())) # script filename (usually with path))
@@ -254,8 +255,9 @@ def encryptedFileUpload(request,userId,groupId,fileName):
     #     bytes = request.FILES['myfile'].read()
     #     title = "/" +request.FILES['myfile'].name
     #     client.files_upload(bytes, title, mute = True)
-
-        f= open(fileName,"w+")
+        fileExtensionIndex = fileName.find('.')
+        title = fileName[:fileExtensionIndex]+".txt"
+        f= open(title,"w+")
         f.write(request.POST.get('encryptedFile'))
         f.close()
 
@@ -263,16 +265,46 @@ def encryptedFileUpload(request,userId,groupId,fileName):
         client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
         p = client.users_get_current_account()
         print(p.email)
-        file = open("test.txt")
+        file = open(title)
 
-        f= open(fileName)
+        f= open(title)
         bytes = f.read().encode()
-        print(bytes)
-        title = "/" +fileName
+        title = "/" +fileName[:fileExtensionIndex]+".txt"
         client.files_upload(bytes, title, mute = True)
+        
+        c = Content()
+        c.groupId = groupId
+        c.fileName = fileName
+        c.save()
 
         
         return HttpResponse(request.POST.get('encryptedFile'))
     else:
         form = UploadFileForm()
-    return render(request, './index.html', {'form': form})
+    return render(request, './index.html', {})
+
+
+def downloadResource(request,userId,groupId,resourceId):
+    print("getting resource off of google drive")
+    c = getContent(resourceId)
+    fileName = c.fileName
+    fileExtensionIndex = fileName.find('.')
+    title = fileName[:fileExtensionIndex]+".txt"
+
+    
+
+    client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
+    p = client.users_get_current_account()
+    print(p.email)
+    metadata, res  = client.files_download('/'+title)
+    print(metadata)
+    print(res)
+    data = b""
+    for i in res:
+        data  = data + i
+    print(data)
+    retObj = {'data':data}
+
+    response = HttpResponse(data.decode("utf-8"),content_type='application/json')
+    response.status_code = 200
+    return HttpResponse(response)

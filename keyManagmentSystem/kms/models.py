@@ -127,6 +127,11 @@ class Content(models.Model):
     fileId = models.AutoField(primary_key=True)
     groupId = models.IntegerField()
 
+def getContent(resourceId):
+    set = Content.objects.filter(fileId = resourceId)
+    for el in set:
+        return el
+
 def getContents(groupId):
     set = Content.objects.filter(groupId = groupId)
     returnSet = []
