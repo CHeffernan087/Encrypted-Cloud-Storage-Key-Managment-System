@@ -1,0 +1,75 @@
+
+.panel{
+    height:15vh;
+    width:70vw;
+    background-color:white;
+    border-radius:20px;
+    box-shadow: 10px 10px 8px #888888;
+}
+.correctedMarks:hover { 
+    background-color: #e1f2e1;
+  }
+
+.correctedMarks
+{
+    background-color: white;
+}
+
+
+
+#conflictingMarks:hover
+{
+    background-color: #fce4e3;
+}
+
+#presentationTimes:hover
+{
+    background-color: #fcfcea;
+}
+
+#notCorrected:hover
+{
+    background-color: #e0dbdb;
+}
+
+.correctedBall
+{
+    background-color: #e1f2e1;
+}
+.correctedMarks:hover .correctedBall{
+    background-color: #68D86B;
+}
+
+.correctedMarks:hover #correctedMarksText{
+    
+    color:white;
+}
+
+
+#notCorrectedBall
+{
+    background-color: #e0dbdb;
+}
+#notCorrected:hover #notCorrectedBall
+{
+    background-color: #606060;
+}
+#notCorrected:hover #notCorrectedCountText
+{
+    color: white;
+}
+
+#conflictingMarksBall 
+{
+    background-color: #fce4e3;
+}
+#conflictingMarks:hover #conflictingMarksBall
+{
+    background-color: #E2574C;
+}
+
+#conflictingMarks:hover #conflictingMarksCountText
+{
+    color:white;
+}
+

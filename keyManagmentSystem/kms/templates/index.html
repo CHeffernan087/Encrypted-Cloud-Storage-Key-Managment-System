@@ -1,94 +1,69 @@
 <!DOCTYPE html>
 <head>
-{% load static %}
-			<link rel="stylesheet" href="{% static 'CSS/index.css'%}">
-<script
-  src="https://code.jquery.com/jquery-3.3.1.min.js"
-  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-  crossorigin="anonymous"></script>
-<script src="https://kjur.github.io/jsrsasign/jsrsasign-all-min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+      <script src = "https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+      {% load static %}
+      <link rel="stylesheet" type="text/css" href="{% static 'CSS/index.css' %}">
+      <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+      <script src="https://kjur.github.io/jsrsasign/jsrsasign-all-min.js"></script>
+      {% load static %}
+      <script src  = "{% static 'scripts/index.js' %}"></script>
 </head>
 <body>
     
-    <h1>This is tcomms baby</h1>
+    <!--h1>This is tcomms baby</h1>
       <form action = "/kms/submit" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="file" name="myfile">
     <button type="submit">Upload</button>
   </form>
 
+
     <div style = "height:3vh;width:3vw;background-color:aqua" id = "clickme"></div>
   <input type="file" id="input">
 
-
-<div style = "float:right;height:30vh;width:30vw;">
-      <form class="box" method="post" action="" enctype="multipart/form-data">
-  <div class="box__input">
-    <input class="box__file" type="file" name="files[]" id="file" data-multiple-caption="{count} files selected" multiple />
-    <label for="file"><strong>Choose a file</strong><span class="box__dragndrop"> or drag it here</span>.</label>
-    <button class="box__button" type="submit">Upload</button>
+  -->
+  <div class = "overlay">
+   
   </div>
-  <div class="box__uploading">Uploading&hellip;</div>
-  <div class="box__success">Done!</div>
-  <div class="box__error">Error! <span></span>.</div>
-</form>
+  <div style ="height:20vh"></div>
+  <div class = "keyInput">
+    <div class = "keyImageContainer">
+      <div style = "height:20%"></div>
+        <div class = "keyImageRow">
+          <div class = "keyImageWrapper">
+              {% load static %}
+              <img class ="keyImage" src  = "{% static 'images/key.png' %}" />
+          </div>
+        </div>
+      <div style = "height:20%"></div>
+    </div>
 
-</div>
 
-  <script>
+    <div class = "keyInputContainer">
+      <div style = "height:15%"></div>
+      <div   class = "keyInputTitle">Key Please</div>
+      <div style = "height:5%"></div>
+      <div class = "keyInputBox">
+        <input type = "file" id = "pemInput"></input>
+         <!---input type = "file" id = "privKey"></input-->
+      </div>
+      <div style = "height:10%"></div>
+      <div class = "submitButtons">
+        <div style = "height:100%;width:70%;margin:auto">
+          <div id = "genKey">
+              <div class = "center">I'm New!</div>
+          </div>
+          <div id = "submitKey">
+             <div class = "center">Submit</div>
+          </div>
+        </div>
+      </div>
 
-
-
-    
-
-    var keyGen = KEYUTIL
-        var test = keyGen.generateKeypair("RSA", 2048)
-        var privateKey = test.prvKeyObj;
-        var publicKey = test.pubKeyObj;
-        console.log("keyObj : ",privateKey)
-
-        console.log("hasnt broken baby")
-
-    $("document").ready(function(){
-        $("#clickme").click(function(){
-           
-            const selectedFile = document.getElementById('input').files[0];
-            console.log(selectedFile)
-           
-            var reader = new FileReader();
-            //var bin = reader.readAsArrayBuffer ( selectedFile )
         
-
-            
-            
-
-
-            // Read the file
-            //reads the file and outputs a base 64 string
-              reader.readAsDataURL(selectedFile);
-            // Specify the handler for the `load` event
-              reader.onload = function (e) {
-               
-                //the results of reading in the file
-                var bytes = e.target.result;
-                //returns a hexadecimal encrypted string
-                var encrypted = KJUR.crypto.Cipher.encrypt(bytes, publicKey, "RSAOAEP")
-                console.log(encrypted)
-
-                //can decrypt a hexadecimal string using the private key
-                var decrypt = KJUR.crypto.Cipher.decrypt(encrypted, privateKey, "RSAOAEP")
-                console.log(decrypt)
-              }
-              
-              
-
-            
-            //alert(encrypted)
-        })
-        
-    })
-        
+    </div>
+  </div>
 
 
-    </script>
+
 </body>

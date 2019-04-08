@@ -1,0 +1,36 @@
+
+#marking:hover
+{
+    background-color: #B8E1FC
+}
+
+
+#marking{
+    height:100%;
+    float:right;
+    background-color:white;
+    width:35%;
+    margin-right:10%;
+    border-radius:25px;
+    border: 4px solid #0068AF;
+    box-shadow: 5px 10px 8px #888888;
+    cursor:pointer"
+}
+
+#tracking
+{
+    height:100%;
+    float:left;
+    background-color:white;
+    width:35%;
+    margin-left:10%;
+    border-radius:25px;
+    border: 4px solid #0068AF;
+    box-shadow: 5px 10px 8px #888888;
+    cursor:pointer
+}
+
+#tracking:hover
+{
+    background-color: #B8E1FC
+}

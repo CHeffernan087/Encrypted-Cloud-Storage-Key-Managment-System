@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+        {% load static %}
+      {% load static %}
+
+	<div style = "height:10vh;width:110vw;position:absolute;left:-5vw;top:-.5vh;background-color:#0068AF"></div>
+	<!--Bar at top of display-->
+	<div style = "height:12.5vh;position:relative">
+		<div style = "height:25vh;width:25vh;background-color:white;border-radius:100%;margin-left:70vw;position:relative;box-shadow: 5px 10px 8px #888888;">
+			<div style = "height:90%;width:90%;text-align:center;margin: 0;position: absolute;top: 50%;left: 50%;margin-right: -50%;transform: translate(-50%, -50%);border: 3px solid #0068AF;border-radius:100%">
+				<div style = "height:100%;width:100%;border-radius:100%;margin:auto;position:relative;">
+					<img style = "height:100%" src = "{% static './images/camponile2.png'%}" />
+				</div>
+			</div>
+		</div>
+	</div>
+</head>
+<body style = "background-color:#d8d8d8">
+
+            <div class = "panel" >
+                
+					{% for group in groups %}
+                    <div style = "height:5vh"></div>
+                    <a href = "getGroup/{{group.groupID}}">
+                        <div class = "panel" style ="cursor:pointer;height:15vh; width:40vw; background-color:white; border-radius:20px; box-shadow: 10px 10px 8px #888888;margin-left:5vw;position:relative">
+                            <div style = "  margin: 0;position: absolute;top: 50%;transform: translate(0%, -50%);height:100%;width:100%">
+                                
+                                <div style = "float:left;width:8%;height:100%;"></div>
+                                <h1 style = "float:left;color:#0068AE">{{group.groupName}}</h1>
+                                <div style = "float:left;height:100%;width:20%;"></div>
+                                <div style = "float:right;width:20%;height:100%">
+                                    <div style = "float:right;width:20%;height:100%;position:relative"></div>
+                                    <div style = "float:right;width:80%;height:100%;position:relative">
+                                        <div style = "height:20%;width100%"></div>
+                                        <a href = "requestAccess">
+                                            
+                                            <div style = "height:60%;width:100%;border-radius:10px;background-color:#0068AE;color:white;font-size:1.75em;line-height: 60%;text-align: center;"><div style = "height:30%"></div>Join</div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    
+					{% endfor %}
+			
+               
+			</div>
+
+</body>
+</html>

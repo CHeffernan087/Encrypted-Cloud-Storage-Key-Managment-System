@@ -1,0 +1,14 @@
+.box__dragndrop,
+.box__uploading,
+.box__success,
+.box__error {
+  display: none;
+}
+
+
+#square
+{
+  height: 80px;
+  width:80px;
+  background-color: crimson
+}

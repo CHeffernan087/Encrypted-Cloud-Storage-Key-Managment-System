@@ -10,9 +10,15 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from .forms import UploadFileForm
+from kms.models import *
 
 import dropbox
 import inspect, os
+from Crypto.PublicKey import RSA
+from Crypto.Random import get_random_bytes
+from Crypto.Cipher import AES, PKCS1_OAEP
+
+
 print(inspect.getfile(inspect.currentframe())) # script filename (usually with path))
 path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) # script directory
 # Create your views here.
@@ -56,3 +62,86 @@ def handle_uploaded_file(f):
 def index(request):
     context = {}
     return render(request, './index.html',context)
+
+def acceptKey(request):
+    print("incoming post request")
+    print(os.getcwd())
+
+    
+    #request is like a dictionary which we can query using .get()
+    #.get the file that the client submitted 
+    file = request.FILES.get('key')
+    inputKey = file.readlines()
+    # read in blob from client post request and parse public RSA key as a python RSA key 
+    
+    keyPem = ""
+    for line in inputKey:
+        keyPem = keyPem+str(line.decode("utf-8"))
+     
+    print(keyPem)
+   
+    print("client key parsed")
+    
+    clientPubKey = RSA.import_key(keyPem)
+
+    session_key = get_random_bytes(16)
+
+    print("\n\n-------- Session Key ---------\n")
+    print(session_key.hex())
+    print("\n-------- Session Key ---------\n\n")
+
+    # Encrypt the session key with the public RSA key
+    cipher_rsa = PKCS1_OAEP.new(clientPubKey)
+    secretSession = cipher_rsa.encrypt(session_key)
+
+    print("\n\n-------- Encrypted Secret ---------\n")
+    print(secretSession.hex())
+    print("\n-------- Encrypted Secret ---------\n\n")
+    data = secretSession.hex()
+    response = HttpResponse(data,content_type='application/json')
+    
+    response.status_code = 200
+    return HttpResponse(response)
+
+def newUser(request):
+    print("adding a new user..")
+  
+    #request is like a dictionary which we can query using .get()
+    #.get the file that the client submitted 
+    file = request.FILES.get('key')
+    inputKey = file.readlines()
+    # read in blob from client post request and parse public RSA key as a python RSA key 
+    
+    keyPem = ""
+    for line in inputKey:
+        keyPem = keyPem+str(line.decode("utf-8"))
+     
+    u = User()
+    u.publicKey = keyPem
+    u.save()
+    print("new user added!")
+   
+   
+    data = u.userId
+    response = HttpResponse(data,content_type='application/json')
+    
+    response.status_code = 200
+    return HttpResponse(response)
+
+
+
+
+def getGroups(request,userId):
+    groups = Group.objects.all()
+    #will make fancier adding styles for your groups
+    #specificGroups= getGroups(publicKey)
+    publicKey = getUserPublicKey(userId)
+    groupList = []
+    for group in groups:
+        groupList.append(group)
+    context = {'groups':groupList,'publicKey':publicKey,'userId':userId}
+    return render(request, './dashboard.html', context)
+
+
+def fetchGroupInfo(request,userId,groupId):
+    return None

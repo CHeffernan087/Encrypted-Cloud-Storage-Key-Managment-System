@@ -1,0 +1,156 @@
+
+
+html, body {
+    height: 100%;
+}
+
+.container{
+  display: flex;
+  justify-content: center;
+}
+.gap{
+  padding-top: 70px;
+}
+.submitButton {
+  clear: both;
+  font-family: arial, sans-serif;
+  background-color: #0E73B9;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+
+}
+
+.submitButton:hover {background-color: #4284b2; color: #ffffff; }
+
+.draftButton{
+  font-family: arial, sans-serif;
+  background-color: #53565A;
+  border: none;
+  color: white;
+  padding: 15px 40px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+}
+
+.draftButton:hover {background-color: #81858c; color: #ffffff; }
+
+.alignLeft
+{
+   float: left;
+   width: 400px;
+}
+
+.parent
+{
+  float: left;
+  padding-bottom: 40px;
+}
+
+.child
+{
+  float: right;
+  padding-bottom: 40px;
+}
+
+html {
+    display: table;
+    margin: auto;
+}
+
+body {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+h1,h2,h3,p{
+  font-family: arial, sans-serif;
+}
+
+h1
+{
+  font-size: 40px;
+}
+h2
+{
+  font-size: 30px;
+}
+h3{
+  margin-top: 60px;
+}
+
+label{
+ font-family: arial, sans-serif;
+ display: block;
+ margin-right: 7px;
+ margin-left: auto;
+ text-align: right;
+}
+
+form {
+  overflow: hidden;
+}
+input {
+  float: right;
+  clear: none;
+  margin-right: 15px;
+  padding: 4px;
+}
+
+textarea {
+    display: block;
+    margin-left: 60px;
+}
+
+.topTextArea
+{
+  display: block;
+  margin-left: 0px;
+  border: 0px;
+  font-family: arial, sans-serif;
+  text-align: left;
+  color:white;
+  background-color: #0E73B9;
+  font-size: 18px;
+}
+
+.topTextAreaOdd
+{
+  display: block;
+  margin-left: 0px;
+  border: 0px;
+  font-family: arial, sans-serif;
+  text-align: left;
+  background-color: white;
+  font-size: 18px;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #0E73B9;
+  text-align: left;
+  padding: 10px;
+}
+
+tr:nth-child(odd) {
+  background-color: #0E73B9;
+  color: white;
+}
+

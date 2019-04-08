@@ -1,0 +1,142 @@
+.box__dragndrop,
+.box__uploading,
+.box__success,
+.box__error {
+  display: none;
+}
+
+
+#square
+{
+  height: 80px;
+  width:80px;
+  background-color: crimson
+}
+
+
+.box.has-advanced-upload {
+  background-color: white;
+  outline: 2px dashed black;
+  outline-offset: -10px;
+}
+.box.has-advanced-upload .box__dragndrop {
+  display: inline;
+}
+
+.keyInput
+{
+  height: 30vh;
+  width:30vw;
+  background-color:white;
+  border-radius:20px;
+  margin:auto ;
+  box-shadow: 10px 10px 8px #888888;
+
+
+}
+
+.keyImageContainer
+{
+  height: 100%;
+  width:40%;
+  float: left
+}
+
+.keyImageRow
+{
+  height:60%;
+  width:100%;
+}
+
+.keyImageWrapper
+{
+  width: 75%;
+  height: 100%;
+  margin:auto;
+}
+
+.keyImage
+{
+  height: 90%
+}
+
+.keyInputContainer
+{
+  height: 100%;
+  float:right;
+  width:60%;
+}
+
+.keyInputTitle
+{
+  height: 20%;
+  width:100%;
+  text-align: center;
+  font-size:1.75em;
+}
+
+.keyInputBox
+{
+  height:15%;
+  width: 50%;
+  margin:auto;
+}
+
+
+.overlay
+{
+  position: absolute;
+  background-color:black;
+  opacity:0.1;
+  height:100vh;
+  width:100vw;
+  z-index: -1;
+}
+
+.submitButtons
+{
+  width:100%;
+  height:15%;
+}
+
+#genKey
+{
+  height:100%;
+  width:40%;
+  float: left;
+  background-color:#fcd683;
+  border-radius:7px;
+  cursor: pointer;
+  position: relative;
+}
+
+#genKey:hover
+{
+  background-color:#f9b625
+}
+
+#submitKey
+{
+  height: 100%;
+  width: 40%;
+  float: right;
+  background-color:#c1e0f4;
+  border-radius:7px;
+  cursor: pointer;
+  position: relative;
+}
+
+#submitKey:hover
+{
+  background-color:#0e74b8
+}
+
+.center
+{
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+}
