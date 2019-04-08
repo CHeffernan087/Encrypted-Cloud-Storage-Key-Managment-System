@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+        {% load static %}
+      {% load static %}
+    {% load static %}
+      <link rel="stylesheet"  href = "{% static 'CSS/admin.css'%}" >
+	<div style = "height:10vh;width:110vw;position:absolute;left:-5vw;top:-.5vh;background-color:#0068AF"></div>
+	<!--Bar at top of display-->
+	<div style = "height:12.5vh;position:relative">
+        <h1 style = "float:left;margin-left:2.5%;color:white">Requests</h1>
+		<div style = "height:25vh;width:25vh;background-color:white;border-radius:100%;margin-left:70vw;position:relative;box-shadow: 5px 10px 8px #888888;">
+			<div style = "height:90%;width:90%;text-align:center;margin: 0;position: absolute;top: 50%;left: 50%;margin-right: -50%;transform: translate(-50%, -50%);border: 3px solid #0068AF;border-radius:100%">
+				<div style = "height:100%;width:100%;border-radius:100%;margin:auto;position:relative;">
+					<img style = "height:100%" src = "{% static './images/camponile2.png'%}" />
+				</div>
+			</div>
+		</div>
+	</div>
+</head>
+<body style = "background-color:#d8d8d8">
+    <table style="width:50%">
+        <tr>
+            <th>Group ID</th>
+            <th>Group Name</th> 
+            <th class = "publicKey">Sender Public Key</th>
+            <th></th>
+        </tr>
+        
+
+
+        {% for request in requests %}
+                <tr>
+                    <td>{{request.groupID}}</td>
+                    <td>{{request.groupName}}</td> 
+                    <td ><div class = "scrollable">{{request.publicKey}}</div></td>
+                    <td><div class = "approveButton"><a href = "./approve/{{request.requestId}}">Approve</div></td>
+                </tr> 
+                            
+		{% endfor %}
+
+
+        </table>
+            
+</body>
+</html>

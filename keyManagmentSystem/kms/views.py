@@ -54,6 +54,8 @@ def upload_file(request):
     return render(request, './index.html', {'form': form})
 
 
+
+
 def handle_uploaded_file(f):
     with open('some/file/name.txt', 'wb+') as destination:
         for chunk in f.chunks():
@@ -144,4 +146,114 @@ def getGroups(request,userId):
 
 
 def fetchGroupInfo(request,userId,groupId):
-    return None
+    files = getContents(groupId)
+    publicKey = getUserPublicKey(userId)
+    groupMember = isInGroup(groupId,userId)
+    print("Group ID = ")
+    print(groupId)
+    context = {'files':files,'publicKey':publicKey,'userId':userId,'groupMember':groupMember,"groupName":getGroupName(groupId),"groupID":groupId}
+    return render(request, './group.html', context)
+
+
+def createRequest(request,userId,groupId):
+    publicKey = getUserPublicKey(userId)
+    groupName = getGroupName(groupId)
+    r = Request()
+    r.publicKey = publicKey
+    r.groupID = groupId
+    r.groupName = groupName
+    r.save()
+    print("Request created")
+    data = "success"
+    response = HttpResponse(data,content_type='application/json')
+    
+    response.status_code = 200
+    return HttpResponse(response)
+
+def viewRequests(req):
+    requests = Request.objects.all()
+    requestList = []
+    for request in requests:
+        requestList.append(request)
+    context = {"requests":requestList}
+    return render(req, './admin.html', context)
+
+def approveRequest(req,requestId):
+    newRequest = getRequest(requestId)
+    member = GroupMembers()
+    member.publicKey = newRequest.publicKey
+    member.groupID = newRequest.groupID
+    member.groupName = newRequest.groupName
+    member.save()
+    newRequest.delete()
+    data = "success"
+    response = HttpResponse(data,content_type='application/json')
+    response.status_code = 200
+    return HttpResponse(response)
+
+
+def returnSessionKey(request,userId,groupId):
+    print("incoming key request")
+    
+   #session_key = bytes(getSessionKey(groupId))
+    session_key = bytes(bytearray.fromhex(getSessionKey(groupId)))
+    print(session_key)
+    #request is like a dictionary which we can query using .get()
+    #.get the file that the client submitted 
+    file = request.FILES.get('key')
+    inputKey = file.readlines()
+    # read in blob from client post request and parse public RSA key as a python RSA key 
+    
+    keyPem = ""
+    for line in inputKey:
+        keyPem = keyPem+str(line.decode("utf-8"))
+     
+    print(keyPem)
+   
+    print("client key parsed")
+    
+    clientPubKey = RSA.import_key(keyPem)
+
+    
+
+    print("\n\n-------- Session Key ---------\n")
+    print(str(session_key, "unicode-escape"))
+    print("\n-------- Session Key ---------\n\n")
+
+    # Encrypt the session key with the public RSA key
+    cipher_rsa = PKCS1_OAEP.new(clientPubKey)
+    secretSession = cipher_rsa.encrypt(session_key)
+
+    print("\n\n-------- Encrypted Secret ---------\n")
+    print(secretSession.hex())
+    print("\n-------- Encrypted Secret ---------\n\n")
+    data = secretSession.hex()
+    response = HttpResponse(data,content_type='application/json')
+    
+    response.status_code = 200
+    return HttpResponse(response)
+
+
+def encryptedFileUpload(request,userId,groupId):
+    print(request.FILES)
+    print("incoming encrypted file")
+    if request.method == 'POST':
+       
+        #handle_uploaded_file(request.FILES['file'])
+        print("valid form bayyyyyyyyby")
+
+        client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
+        p = client.users_get_current_account()
+        print(p.email)
+        file = open("test.txt")
+
+    
+        bytes = request.FILES['myfile'].read()
+        title = "/" +request.FILES['myfile'].name
+        client.files_upload(bytes, title, mute = True)
+
+
+        return HttpResponse("Successful file upload!")
+    else:
+        form = UploadFileForm()
+    return render(request, './index.html', {'form': form})

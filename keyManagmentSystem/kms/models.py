@@ -8,10 +8,31 @@ class GroupMembers(models.Model):
     groupID = models.CharField(max_length=500)
     groupName = models.CharField(max_length=500)
 
+
+def isInGroup(groupId,userId):
+    set = GroupMembers.objects.filter(groupID = groupId)
+    publicKey = getUserPublicKey(userId)
+    for member in set:
+        if(member.publicKey == publicKey):
+            return True
+    return False
+
 class Group(models.Model):
     groupID = models.AutoField(primary_key=True)
     groupName = models.CharField(max_length=500)
     sessionKey = models.CharField(max_length=500)
+
+def getSessionKey(groupID):
+    set = Group.objects.filter(groupID = groupID)
+    for group in set:
+        return group.sessionKey
+
+def getGroupName(groupId):
+    set = Group.objects.filter(groupID = groupId)
+    resultSet = []
+    for i in set:
+        resultSet.append(i)
+    return resultSet[0].groupName
 
 def printGroups():
     set = Group.objects.all()
@@ -21,10 +42,20 @@ def printGroups():
 
 def makeGroup(name):
     g = Group()
-    session_key = get_random_bytes(16)
-    g.sessionKey = get_random_bytes(16)
+    session_key = get_random_bytes(16).hex()
+    g.sessionKey = session_key
     g.groupName = name
     g.save()
+
+
+def deleteGroup(groupID):
+    set = GroupMembers.objects.filter(groupID = groupID)
+    for member in set:
+        member.delete()
+    groups = Group.objects.filter(groupID = groupID)
+    for group in groups:
+        group.delete()
+    
 
 class User(models.Model):
     publicKey = models.CharField(max_length=3000)
@@ -89,6 +120,7 @@ class Request(models.Model):
     publicKey = models.CharField(max_length=3000)
     groupID = models.CharField(max_length=500)
     groupName = models.CharField(max_length=500)
+    requestId = models.AutoField(primary_key=True)
 
 class Content(models.Model):
     fileName = models.CharField(max_length=3000)
@@ -101,3 +133,17 @@ def getContents(groupId):
     for content in set:
         returnSet.append(content)
     return returnSet
+
+
+def getRequest(requestId):
+    set = Request.objects.filter(requestId = requestId)
+    returnSet = []
+    for el in set:
+        returnSet.append(el)
+    return returnSet[0]
+
+def removeRequest(requestId):
+    set = Request.objects.filter(requestId = requestId)
+    returnSet = []
+    for el in set:
+        el.delete()

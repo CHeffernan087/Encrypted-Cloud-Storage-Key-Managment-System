@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+        {% load static %}
+      {% load static %}
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+      <script src = "https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+      <script src="https://kjur.github.io/jsrsasign/jsrsasign-all-min.js"></script>
+       <script src="https://cdnjs.cloudflare.com/ajax/libs/sjcl/1.0.8/sjcl.js"></script>
+    <link rel="script"  href = "{% static 'scripts/group.js'%}" >
+	<div style = "height:10vh;width:110vw;position:absolute;left:-5vw;top:-.5vh;background-color:#0068AF"></div>
+	<!--Bar at top of display-->
+	<div style = "height:12.5vh;position:relative">
+        <h1 style = "float:left;margin-left:2.5%;color:white">{{groupName}}</h1>
+		<div style = "height:25vh;width:25vh;background-color:white;border-radius:100%;margin-left:70vw;position:relative;box-shadow: 5px 10px 8px #888888;">
+			<div style = "height:90%;width:90%;text-align:center;margin: 0;position: absolute;top: 50%;left: 50%;margin-right: -50%;transform: translate(-50%, -50%);border: 3px solid #0068AF;border-radius:100%">
+				<div style = "height:100%;width:100%;border-radius:100%;margin:auto;position:relative;">
+					<img style = "height:100%" src = "{% static './images/camponile2.png'%}" />
+				</div>
+			</div>
+		</div>
+	</div>
+</head>
+<body style = "background-color:#d8d8d8">
+    <h1 id = "pubKey">{{publicKey}}</h1>
+            <div class = "panel" >
+                
+					{% for file in files %}
+                    <div style = "height:5vh"></div>
+                    <a href = "download/{{file.fileId}}">
+                        <div class = "panel" style ="cursor:pointer;height:15vh; width:40vw; background-color:white; border-radius:20px; box-shadow: 10px 10px 8px #888888;margin-left:5vw;position:relative">
+                            <div style = "  margin: 0;position: absolute;top: 50%;transform: translate(0%, -50%);height:100%;width:100%">
+                                
+                                <div style = "float:left;width:8%;height:100%;"></div>
+                                <h1 style = "float:left;color:#0068AE">{{file.fileName}}</h1>
+                                <div style = "float:left;height:100%;width:20%;"></div>
+                                <div style = "float:right;width:20%;height:100%">
+                                    <div style = "float:right;width:20%;height:100%;position:relative"></div>
+                                    <div style = "float:right;width:80%;height:100%;position:relative">
+                                        <div style = "height:20%;width100%"></div>
+                                        <a href = "requestAccess">
+                                            
+                                            <div style = "height:60%;width:100%;border-radius:10px;background-color:#0068AE;color:white;font-size:1.75em;line-height: 60%;text-align: center;"><div style = "height:30%"></div>Join</div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    
+					{% endfor %}
+			
+               
+			</div>
+            <div id = "upload" style = "cursor:pointer;height:50vh;width:30vh;float:right;position:absolute;right:1vh;top:30vh;background-color:white">
+                <input id= "fileUpload" type = "file"></input>
+                <input id= "privateKey" type = "file" ></input>
+                <div id = "uploadSubmit" style = "height:50px;width:50px;background-color:red"></div>
+            </div>
+
+
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+$(document).ready(function(){
+$("#uploadSubmit").click(function(){
+    var keyGen = KEYUTIL
+    var privKeyFile = document.getElementById('privateKey').files[0];
+    var fileUpload = document.getElementById('fileUpload').files[0];
+
+//     if(keyFile){
+//         var reader = new FileReader();
+//             reader.readAsText(keyFile);
+//             reader.onload = function(e) {
+//                 // browser completed reading file - display it
+//                console.log(e.target.result)
+//                 var publicKey = keyGen.getKey(e.target.result)
+//                 console.log(publicKey)
+                var pubKey = document.getElementById("pubKey").innerHTML
+                console.log(pubKey)
+                 //make blob of the pem structure
+                 var blob = new Blob([pubKey], {
+                     type: 'application/x-pem-file'
+                 });
+                
+                 //attach blob file to form structure to send to the backend
+                 filename = "key.pem"
+                 var form = new FormData();
+                 const file = new File([blob],filename, {type: "application/x-pem-file"})
+                 form.append("key", file);
+               
+                let csrftoken = getCookie('csrftoken');      
+                 console.log(csrftoken)
+                 $.ajaxSetup({
+                     beforeSend: function(xhr, settings) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                         }
+                 });
+                var groupId = "{{groupID}}"
+                 $.ajax(
+    
+                     options = {
+                         contentType : false,
+                         processData:false,
+                         url :"./"+groupId+ "/uploadKey/", // the endpoint
+                         type : "POST", // http method
+                         data:form,
+                         dataType: 'text',
+                        
+                         // handle a successful response
+                        success : function(data,status,xhr) {
+                         
+                            console.log(data)
+                           
+
+                             Swal.fire({
+                                 title: 'File Upload Complete!',
+                                 type: 'success',
+                                 confirmButtonColor: '#3085d6',
+                                 confirmButtonText: 'Ok'
+                               }).then((result) => {
+                                 if (result.value) {
+
+                                     var privKeyFile = document.getElementById('privateKey').files[0];
+                                       var reader = new FileReader();
+                                        reader.readAsText(privKeyFile);
+                                        reader.onload = function(e) {
+                                            // browser completed reading file - display it
+                                        console.log(e.target.result)
+                                        var privateKeyPemText = keyGen.getKey(e.target.result)
+                                
+                                        //var privateKeyPem = (keyGen.getPEM(privateKeyPem, "PKCS8PRV"))
+                                        var privateKey = keyGen.getKeyFromPlainPrivatePKCS8PEM(e.target.result)
+                                        var sessionID = KJUR.crypto.Cipher.decrypt(data, privateKey,"RSAOAEP")
+                                        console.log(sessionID)
+
+                                       var myString   = "https://www.titanesmedellin.com/";
+                                        var myPassword = "myPassword";
+
+                                        
+
+                                        reader.readAsText(fileUpload);
+                                        reader.onload = function(e) {
+                                            // browser completed reading file - display it
+                                        console.log(e.target.result)
+                                        var encrypted = sjcl.encrypt(sessionID, e.target.result)
+                                        var decrypted = sjcl.decrypt(sessionID, encrypted)
+                                        
+                                        console.log(JSON.parse(encrypted).ct)
+                                        console.log(decrypted)
+
+
+
+                                                                        var groupId = "{{groupID}}"
+                                                                        $.ajax(
+                                                            
+                                                                            options = {
+                                                                                contentType : false,
+                                                                                processData:false,
+                                                                                url :"./"+groupId+ "/uploadKey/", // the endpoint
+                                                                                type : "POST", // http method
+                                                                                data:form,
+                                                                                dataType: 'text',
+                                                                                
+                                                                                // handle a successful response
+                                                                                success : function(data,status,xhr) {
+                                                                                
+                                                                                    console.log(data)
+                                                                                
+
+                                                                                    Swal.fire({
+                                                                                        title: 'File Upload Complete!',
+                                                                                        type: 'success',
+                                                                                        confirmButtonColor: '#3085d6',
+                                                                                        confirmButtonText: 'Ok'
+                                                                                    }).then((result) => {
+                                                                                        if (result.value) {
+
+                                                                                            var privKeyFile = document.getElementById('privateKey').files[0];
+                                                                                            var reader = new FileReader();
+                                                                                                reader.readAsText(privKeyFile);
+                                                                                                reader.onload = function(e) {
+                                                                                                    // browser completed reading file - display it
+                                                                                                console.log(e.target.result)
+                                                                                                var privateKeyPemText = keyGen.getKey(e.target.result)
+                                                                                        
+                                                                                                //var privateKeyPem = (keyGen.getPEM(privateKeyPem, "PKCS8PRV"))
+                                                                                                var privateKey = keyGen.getKeyFromPlainPrivatePKCS8PEM(e.target.result)
+                                                                                                var sessionID = KJUR.crypto.Cipher.decrypt(data, privateKey,"RSAOAEP")
+                                                                                                console.log(sessionID)
+
+                                                                                            var myString   = "https://www.titanesmedellin.com/";
+                                                                                                var myPassword = "myPassword";
+
+                                                                                                
+
+                                                                                                reader.readAsText(fileUpload);
+                                                                                                reader.onload = function(e) {
+                                                                                                    // browser completed reading file - display it
+                                                                                                console.log(e.target.result)
+                                                                                                var encrypted = sjcl.encrypt(sessionID, e.target.result)
+                                                                                                var decrypted = sjcl.decrypt(sessionID, encrypted)
+                                                                                                
+                                                                                                console.log(JSON.parse(encrypted).ct)
+                                                                                                console.log(decrypted)
+                                                                                                }
+
+                                                                                                // PROCESS
+                                                                                                
+                                                                                                
+                                                                                                
+                                                                                            
+                                                                                                
+                                                                                            //var newUrl = "groups/"+ data
+                                                                                            // $.get( newUrl,function(){});
+                                                                                            //go to dashboard view
+                                                                                            //window.location.replace(newUrl);
+                                                                                                }
+                                                                                        }
+                                                                                    })
+
+                                                                                    
+
+                                                                                    //Add the link somewhere, an appendChild statement will do.
+                                                                                    //Then run this
+                                                        //                            document.getElementById('someLink').click();
+                                                                            },
+                                                                        
+                                                        //                         // handle a non-successful response
+                                                                        error : function(xhr,errmsg,err) {
+                                                                                    Swal.fire({
+                                                                                    type: 'error',
+                                                                                    title: 'Oops...',
+                                                                                        text: 'An error was returned. Data not written to database!',
+                                                                                    
+                                                                                    })
+                                                                                    console.log(errmsg)
+                                                                                    console.log(err)
+                                                            
+                                                                                    console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                                                                                }
+                                                                            }
+                                                                    );
+
+
+
+                                        }
+
+                                        // PROCESS
+                                        
+                                        
+                                        
+                                      
+                                        
+                                     //var newUrl = "groups/"+ data
+                                     // $.get( newUrl,function(){});
+                                     //go to dashboard view
+                                     //window.location.replace(newUrl);
+                                        }
+                                 }
+                               })
+
+                             
+
+                             //Add the link somewhere, an appendChild statement will do.
+                            //Then run this
+//                            document.getElementById('someLink').click();
+                    },
+                
+//                         // handle a non-successful response
+                   error : function(xhr,errmsg,err) {
+                            Swal.fire({
+                               type: 'error',
+                               title: 'Oops...',
+                                text: 'An error was returned. Data not written to database!',
+                               
+                              })
+                             console.log(errmsg)
+                             console.log(err)
+    
+                            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                        }
+                     }
+               );
+
+
+
+
+
+
+//             };
+//     }
+//     else{
+//         Swal.fire("You Haven't selected a file!")
+//     }
+ })
+
+})
+</script>
+</body>
+</html>

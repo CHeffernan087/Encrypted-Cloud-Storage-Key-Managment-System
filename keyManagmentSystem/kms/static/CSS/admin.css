@@ -1,0 +1,32 @@
+th
+{
+    background-color:#0068ae;
+    color:white;
+    border:solid white 1px;
+}
+td
+{
+    background-color:white;
+
+}
+
+.approveButton{
+    background-color:green;
+    height:30%;
+    width:100%;
+    border-radius:5px
+}
+
+.publicKey
+{
+    overflow: hidden;
+    
+}
+
+.scrollable {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+}
