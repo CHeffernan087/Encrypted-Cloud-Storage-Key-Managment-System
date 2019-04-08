@@ -234,26 +234,45 @@ def returnSessionKey(request,userId,groupId):
     return HttpResponse(response)
 
 
-def encryptedFileUpload(request,userId,groupId):
-    print(request.FILES)
-    print("incoming encrypted file")
+def encryptedFileUpload(request,userId,groupId,fileName):
+    print("Querying Dictionary:")
+    
+    print("\n\n-------- Encrypted File Cypher Text ---------\n")
+    print(request.POST.get('encryptedFile'))
+    print("\n\n-------- Encrypted File Cypher Text ---------\n")
     if request.method == 'POST':
        
-        #handle_uploaded_file(request.FILES['file'])
-        print("valid form bayyyyyyyyby")
+    #     #handle_uploaded_file(request.FILES['file'])
+    #     print("valid form bayyyyyyyyby")
 
+    #     client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
+    #     p = client.users_get_current_account()
+    #     print(p.email)
+    #     file = open("test.txt")
+
+    
+    #     bytes = request.FILES['myfile'].read()
+    #     title = "/" +request.FILES['myfile'].name
+    #     client.files_upload(bytes, title, mute = True)
+
+        f= open(fileName,"w+")
+        f.write(request.POST.get('encryptedFile'))
+        f.close()
+
+        
         client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
         p = client.users_get_current_account()
         print(p.email)
         file = open("test.txt")
 
-    
-        bytes = request.FILES['myfile'].read()
-        title = "/" +request.FILES['myfile'].name
+        f= open(fileName)
+        bytes = f.read().encode()
+        print(bytes)
+        title = "/" +fileName
         client.files_upload(bytes, title, mute = True)
 
-
-        return HttpResponse("Successful file upload!")
+        
+        return HttpResponse(request.POST.get('encryptedFile'))
     else:
         form = UploadFileForm()
     return render(request, './index.html', {'form': form})

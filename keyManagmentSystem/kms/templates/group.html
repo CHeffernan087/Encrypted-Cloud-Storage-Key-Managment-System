@@ -165,18 +165,18 @@ $("#uploadSubmit").click(function(){
                                         console.log(JSON.parse(encrypted).ct)
                                         console.log(decrypted)
 
+                                        var fileCipherText = JSON.parse(encrypted).ct
+
 
 
                                                                         var groupId = "{{groupID}}"
                                                                         $.ajax(
                                                             
                                                                             options = {
-                                                                                contentType : false,
-                                                                                processData:false,
-                                                                                url :"./"+groupId+ "/uploadKey/", // the endpoint
+                                                                                
+                                                                                url :"./"+groupId+ "/encryptedFileUpload/testing.txt", // the endpoint
                                                                                 type : "POST", // http method
-                                                                                data:form,
-                                                                                dataType: 'text',
+                                                                                data:{encryptedFile:fileCipherText},
                                                                                 
                                                                                 // handle a successful response
                                                                                 success : function(data,status,xhr) {
