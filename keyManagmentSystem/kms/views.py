@@ -68,7 +68,6 @@ def index(request):
 
 def acceptKey(request):
     print("incoming post request")
-    print(os.getcwd())
 
     
     #request is like a dictionary which we can query using .get()
@@ -84,23 +83,32 @@ def acceptKey(request):
     print(keyPem)
    
     print("client key parsed")
-    
+    existingUser = getUser(keyPem)
+    print(existingUser)
+    if(existingUser == None):
+        print("Making New User")
+        u = User()
+        u.publicKey = keyPem
+        u.save()
+
     clientPubKey = RSA.import_key(keyPem)
 
-    session_key = get_random_bytes(16)
+    # session_key = get_random_bytes(16)
 
-    print("\n\n-------- Session Key ---------\n")
-    print(session_key.hex())
-    print("\n-------- Session Key ---------\n\n")
+    # print("\n\n-------- Session Key ---------\n")
+    # print(session_key.hex())
+    # print("\n-------- Session Key ---------\n\n")
 
-    # Encrypt the session key with the public RSA key
-    cipher_rsa = PKCS1_OAEP.new(clientPubKey)
-    secretSession = cipher_rsa.encrypt(session_key)
+    # # Encrypt the session key with the public RSA key
+    # cipher_rsa = PKCS1_OAEP.new(clientPubKey)
+    # secretSession = cipher_rsa.encrypt(session_key)
 
-    print("\n\n-------- Encrypted Secret ---------\n")
-    print(secretSession.hex())
-    print("\n-------- Encrypted Secret ---------\n\n")
-    data = secretSession.hex()
+    # print("\n\n-------- Encrypted Secret ---------\n")
+    # print(secretSession.hex())
+    # print("\n-------- Encrypted Secret ---------\n\n")
+    # data = secretSession.hex()
+    user = getUser(keyPem)
+    data = user.userId
     response = HttpResponse(data,content_type='application/json')
     
     response.status_code = 200
@@ -134,15 +142,26 @@ def newUser(request):
 
 
 
+
 def getGroups(request,userId):
     groups = Group.objects.all()
     #will make fancier adding styles for your groups
     #specificGroups= getGroups(publicKey)
+    specificGroups= getUserGroups(userId)
+    
     publicKey = getUserPublicKey(userId)
+    memberList = []
     groupList = []
+    contained = []
     for group in groups:
         groupList.append(group)
-    context = {'groups':groupList,'publicKey':publicKey,'userId':userId}
+        for spec in specificGroups:
+            if(spec.groupID == group.groupID):
+                contained.append(True)
+        contained.append(False)
+    print("contained")
+    print(contained)
+    context = {'groups':groupList,'publicKey':publicKey,'userId':userId,'contained':contained}
     return render(request, './dashboard.html', context)
 
 
@@ -171,6 +190,7 @@ def createRequest(request,userId,groupId):
     response.status_code = 200
     return HttpResponse(response)
 
+@login_required
 def viewRequests(req):
     requests = Request.objects.all()
     requestList = []
@@ -181,11 +201,15 @@ def viewRequests(req):
 
 def approveRequest(req,requestId):
     newRequest = getRequest(requestId)
-    member = GroupMembers()
-    member.publicKey = newRequest.publicKey
-    member.groupID = newRequest.groupID
-    member.groupName = newRequest.groupName
-    member.save()
+    userPK = newRequest.publicKey
+    user = getUser(userPK)
+    invalidRequest = isInGroup(newRequest.groupID,user.userId)
+    if(invalidRequest == False):
+        member = GroupMembers()
+        member.publicKey = newRequest.publicKey
+        member.groupID = newRequest.groupID
+        member.groupName = newRequest.groupName
+        member.save()
     newRequest.delete()
     data = "success"
     response = HttpResponse(data,content_type='application/json')
@@ -264,8 +288,8 @@ def encryptedFileUpload(request,userId,groupId,fileName):
         
         client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
         p = client.users_get_current_account()
-        print(p.email)
-        file = open(title)
+        print("Upload to google drive complete..")
+
 
         f= open(title)
         bytes = f.read().encode()
@@ -285,7 +309,7 @@ def encryptedFileUpload(request,userId,groupId,fileName):
 
 
 def downloadResource(request,userId,groupId,resourceId):
-    print("getting resource off of google drive")
+
     c = getContent(resourceId)
     fileName = c.fileName
     fileExtensionIndex = fileName.find('.')
@@ -293,6 +317,29 @@ def downloadResource(request,userId,groupId,resourceId):
 
     
 
+    client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
+    p = client.users_get_current_account()
+    print(p.email)
+    metadata, res  = client.files_download('/'+title)
+    print(metadata)
+    print(res)
+    data = b""
+    for i in res:
+        data  = data + i
+    print(data)
+    retObj = {'data':data}
+
+    response = HttpResponse(data.decode("utf-8"),content_type='application/json')
+    response.status_code = 200
+    return HttpResponse(response)
+
+
+def downloadEncryptedResource(request,userId,groupId,resourceId):
+    print("getting resource off of google drive")
+    c = getContent(resourceId)
+    fileName = c.fileName
+    fileExtensionIndex = fileName.find('.')
+    title = fileName[:fileExtensionIndex]+".txt"
     client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
     p = client.users_get_current_account()
     print(p.email)

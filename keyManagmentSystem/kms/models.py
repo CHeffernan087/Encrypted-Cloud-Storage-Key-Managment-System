@@ -22,6 +22,12 @@ class Group(models.Model):
     groupName = models.CharField(max_length=500)
     sessionKey = models.CharField(max_length=500)
 
+def getGroup(groupID):
+    set = Group.objects.filter(groupID = groupID)
+    for i in set:
+        return i
+    return None
+
 def getSessionKey(groupID):
     set = Group.objects.filter(groupID = groupID)
     for group in set:
@@ -34,11 +40,23 @@ def getGroupName(groupId):
         resultSet.append(i)
     return resultSet[0].groupName
 
+def printGroupMembers(groupId):
+    set = GroupMembers.objects.filter(groupID = groupId)
+    i=0
+    for member in set:
+        user = getUser(member.publicKey)
+        i = i+1
+        print("Member : "+str(i))
+        print("userID :"+str(user.userId))
+        print("pubKey :" + str(user.publicKey))
+
 def printGroups():
     set = Group.objects.all()
     for group in set:
-        print("Name :"+group.name)
+        print("Group ID : "+str(group.groupID))
+        print("Name :"+group.groupName)
         print(group.sessionKey)
+        print("\n")
 
 def makeGroup(name):
     g = Group()
@@ -85,7 +103,21 @@ def printAllUsers():
         user.print()
 
 def getUser(publicKey):
-    return User.objects.filter(publicKey = publicKey)
+    set = User.objects.all()
+    
+    for i in set:
+        if(i.publicKey == publicKey):
+            return i
+    return None
+
+
+def removeUserFromGroup(groupId, userId):
+    publicKey = getUserPublicKey(userId)
+    set = GroupMembers.objects.filter(groupID = groupId)
+    for i in set:
+        user = getUser(i.publicKey)
+        if user.userId == userId:
+            i.delete()
 
 def getGroups(publicKey):
     userSet = User.objects.filter(publicKey = publicKey)
@@ -99,6 +131,16 @@ def getGroups(publicKey):
     for group in set:
         if(group.publicKey == user.publicKey):
             groupList.append(group)
+
+def getUserGroups(userId):
+    set = GroupMembers.objects.all()
+    groupList = []
+    for group in set:
+        mGroup = getGroup(group.groupID)
+        groupList.append(mGroup)
+    return groupList
+
+
 
 def userExists(publicKey):
     userSet = User.objects.filter(publicKey = publicKey)

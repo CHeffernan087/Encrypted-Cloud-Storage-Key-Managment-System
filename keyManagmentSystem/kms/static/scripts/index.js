@@ -96,60 +96,26 @@ $("#clickme").click(function(){
 })
 
 $("#submitKey").click(function(){
+   
     var keyFile = document.getElementById('pemInput').files[0];
-    console.log(keyFile)
-
-    var privKey = document.getElementById('privKey').files[0];
-    var privReader = new FileReader();
-    privReader.readAsText(privKey);
-    privReader.onload = function(e) {
-                // browser completed reading file - display it
-               console.log(e.target.result)
-                privateKey = keyGen.getKeyFromPlainPrivatePKCS8PEM(e.target.result)
-                console.log(privateKey)
-
-                
-
-
-                var blob = new Blob([e.target.result], {
-                    type: 'application/x-pem-file'
-                });
-            }
-
-
     if(keyFile){
         var reader = new FileReader();
             reader.readAsText(keyFile);
             reader.onload = function(e) {
-                // browser completed reading file - display it
-               console.log(e.target.result)
                 var publicKey = keyGen.getKey(e.target.result)
                 console.log(publicKey)
-
-                
-
-
                 var blob = new Blob([e.target.result], {
                     type: 'application/x-pem-file'
                 });
-
-
-
-
                 filename = "key.pem"
                 var form = new FormData();
                 const file = new File([blob],filename, {type: "application/x-pem-file"})
-                console.log(file)
                 form.append("key", file);
-               
-    
                 let csrftoken = getCookie('csrftoken');      
                 console.log(csrftoken)
                 $.ajaxSetup({
                     beforeSend: function(xhr, settings) {
-                        
                             xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                        
                     }
                 });
     
@@ -165,44 +131,21 @@ $("#submitKey").click(function(){
                         
                         // handle a successful response
                         success : function(data,status,xhr) {
-                         
-                            console.log(data)
-                            console.log(privateKey)
-                            console.log(keyGen.getPEM(privateKey, "PKCS8PRV"))
-                            var sessionID = KJUR.crypto.Cipher.decrypt(data, privateKey,"RSAOAEP")
-                         
-                            console.log(jesus)
-                      
-                            Swal.fire({
-                                type: 'success',
-                                title: 'Submission Recieved.',
-                                text: 'Marks were uploaded to the database',
-                               
-                              })
-
+                            
+                            var newUrl = "groups/"+ data
+                            window.location.replace(newUrl);    
                            
                         },
                 
                         // handle a non-successful response
                         error : function(xhr,errmsg,err) {
-                            Swal.fire({
-                                type: 'error',
-                                title: 'Oops...',
-                                text: 'An error was returned. Data not written to database!',
-                               
-                              })
-                              console.log(errmsg)
-                              console.log(err)
-    
+                            Swal.fire({type: 'error',title: 'Oops...',text: 'An error was returned. Data not written to database!',})
+                            console.log(errmsg)
+                            console.log(err)
                             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
                         }
                     }
                 );
-
-
-
-
-
 
             };
     }
@@ -212,65 +155,6 @@ $("#submitKey").click(function(){
 })
 
 
-
-
-/**
- * 
- * key input stuff
- * 
- */
-
-// Swal.fire({
-//     title: 'Select image',
-//     input: 'file',
-//     inputAttributes: {
-//       'accept': 'image/*',
-//       'aria-label': 'Upload your profile picture'
-//     }
-//   })
-  
-//   if (file) {
-//     const reader = new FileReader
-//     reader.onload = (e) => {
-//       Swal.fire({
-//         title: 'Your uploaded picture',
-//         imageUrl: e.target.result,
-//         imageAlt: 'The uploaded picture'
-//       })
-//     }
-//     reader.readAsDataURL(file)
-//   }
-
-/**
- * 
- * 
- * 
- */
-
-/**
- * Drag and drop file upload.
- */
-
-
-
-
-
-var isAdvancedUpload = function() {
-    var div = document.createElement('div');
-    return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
-  }();
-
-
-
-  if (isAdvancedUpload) {
-    // ...
-  }
-
-var $form = $('.box');
-
-if (isAdvancedUpload) {
-  $form.addClass('has-advanced-upload');
-}
 
 
 /** Adding A new User to the System*/
@@ -336,8 +220,6 @@ $("#genKey").click(function(){
                               }).then((result) => {
                                 if (result.value) {
                                     var newUrl = "groups/"+ data
-                                    // $.get( newUrl,function(){});
-                                    //go to dashboard view
                                     window.location.replace(newUrl);
                                 }
                               })
@@ -366,14 +248,98 @@ $("#genKey").click(function(){
                     }
                 );
 
-
-
-
-
-
             };
     }
     else{
+        var keyGen = KEYUTIL
+        var key = keyGen.generateKeypair("RSA", 1024)
+        var privateKey = key.prvKeyObj;
+        var publicKey = key.pubKeyObj;
+        var pemPriv = keyGen.getPEM(privateKey, "PKCS8PRV")
+        var publicPem = keyGen.getPEM(publicKey, "PKCS8PUB")
+
+        var blob = new Blob([pemPriv], {
+            type: 'application/x-pem-file'
+        });
+        
+        //attach blob file to form structure to send to the backend
+        filename = "privateKey.pem"
+        const file = new File([blob],filename, {type: "application/x-pem-file"})
+        download(file ,filename, "application/x-pem-file")
+
+        blob = new Blob([publicPem], {
+            type: 'application/x-pem-file'
+        });
+        
+        //attach blob file to form structure to send to the backend
+        filename = "publicKey.pem"
+        const file2 = new File([blob],filename, {type: "application/x-pem-file"})
+        download(file2 ,filename, "application/x-pem-file")
+     
+
+        var form = new FormData();
+        form.append("key", file2);
+       
+
+        let csrftoken = getCookie('csrftoken');      
+        console.log(csrftoken)
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                
+            }
+        });
+
+        $.ajax(
+    
+            options = {
+                contentType : false,
+                processData:false,
+                url : "addUser/", // the endpoint
+                type : "POST", // http method
+                data:form,
+                dataType: 'text',
+                
+                // handle a successful response
+                success : function(data,status,xhr) {
+                 
+                    console.log(data)
+                   
+
+                    Swal.fire({
+                        title: 'You have been added to the list of Users!',
+                        type: 'success',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Ok'
+                      }).then((result) => {
+                        if (result.value) {
+                            var newUrl = "groups/"+ data
+                            window.location.replace(newUrl);
+                        }
+                      })
+
+                   
+                },
+        
+                // handle a non-successful response
+                error : function(xhr,errmsg,err) {
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Oops...',
+                        text: 'Could Not Upload Credentials at this time',
+                       
+                      })
+                      console.log(errmsg)
+                      console.log(err)
+
+                    console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+                }
+            }
+        );
+
+    
+
         Swal.fire("You Haven't selected a file!")
     }
 })
