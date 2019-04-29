@@ -88,16 +88,9 @@ function getCookie(name) {
                                                                                     saveAs(blob, nameAndExtension);
                                                                                   
 
-                                                                                
-
-                                                                                    
-
-                                                                                    //Add the link somewhere, an appendChild statement will do.
-                                                                                    //Then run this
-                                                        //                            document.getElementById('someLink').click();
                                                                             },
                                                                         
-                                                        //                         // handle a non-successful response
+
                                                                         error : function(xhr,errmsg,err) {
                                                                                     Swal.fire({
                                                                                     type: 'error',
@@ -116,9 +109,17 @@ function getCookie(name) {
                 })
         }
         else{
+            var groupId = "{{groupID}}"
          var pubKey = document.getElementById("pubKey").innerHTML
-                console.log(pubKey)
-                 //make blob of the pem structure
+               //configure csrf token for ajax post
+                let csrftoken = getCookie('csrftoken');      
+                 console.log(csrftoken)
+                 $.ajaxSetup({
+                     beforeSend: function(xhr, settings) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                         }
+                 });
+                //grab byte structure of the PEM public key
                  var blob = new Blob([pubKey], {
                      type: 'application/x-pem-file'
                  });
@@ -128,15 +129,7 @@ function getCookie(name) {
                  var form = new FormData();
                  const file = new File([blob],filename, {type: "application/x-pem-file"})
                  form.append("key", file);
-               
-                let csrftoken = getCookie('csrftoken');      
-                 console.log(csrftoken)
-                 $.ajaxSetup({
-                     beforeSend: function(xhr, settings) {
-                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                         }
-                 });
-                var groupId = "{{groupID}}"
+                
                  $.ajax(
     
                      options = {
@@ -146,32 +139,23 @@ function getCookie(name) {
                          type : "POST", // http method
                          data:form,
                          dataType: 'text',
-                        
-                         // handle a successful response
-                        success : function(data,status,xhr) {
-                         
+                        //symmetric key is returned by the django back end
+                        success : function(symmetricKey,status,xhr) {
                             //data here is the encrypted session key. Rename later
-                            console.log(data)
-                           
+                            var privKeyFile = document.getElementById('privateKey').files[0];
+                            var reader = new FileReader();
+                            //open private key PEM file from client
+                            reader.readAsText(privKeyFile);
+                            reader.onload = function(e) {
+                                // browser completed reading file - display it
+                                console.log(e.target.result)
+                                var privateKeyPemText = keyGen.getKey(e.target.result)
+                                var privateKey = keyGen.getKeyFromPlainPrivatePKCS8PEM(e.target.result)
+                                // the sessionID is the decrypted symmetric key
+                                var sessionID = KJUR.crypto.Cipher.decrypt(symmetricKey, privateKey,"RSAOAEP")
+                                console.log(sessionID)
 
-                             
-                             
-
-                                     var privKeyFile = document.getElementById('privateKey').files[0];
-                                       var reader = new FileReader();
-                                        reader.readAsText(privKeyFile);
-                                        reader.onload = function(e) {
-                                            // browser completed reading file - display it
-                                        console.log(e.target.result)
-                                        var privateKeyPemText = keyGen.getKey(e.target.result)
-                                
-                                        //var privateKeyPem = (keyGen.getPEM(privateKeyPem, "PKCS8PRV"))
-                                        var privateKey = keyGen.getKeyFromPlainPrivatePKCS8PEM(e.target.result)
-                                        var sessionID = KJUR.crypto.Cipher.decrypt(data, privateKey,"RSAOAEP")
-                                        console.log(sessionID)
-
-                                       var myString   = "https://www.titanesmedellin.com/";
-                                        var myPassword = "myPassword";
+                                      
 
                                         
 //can all be commented out from here
@@ -377,14 +361,7 @@ $("#uploadSubmit").click(function(){
     var privKeyFile = document.getElementById('privateKey').files[0];
     var fileUpload = document.getElementById('fileUpload').files[0];
    
-//     if(keyFile){
-//         var reader = new FileReader();
-//             reader.readAsText(keyFile);
-//             reader.onload = function(e) {
-//                 // browser completed reading file - display it
-//                console.log(e.target.result)
-//                 var publicKey = keyGen.getKey(e.target.result)
-//                 console.log(publicKey)
+
                 var pubKey = document.getElementById("pubKey").innerHTML
                 console.log(pubKey)
                  //make blob of the pem structure
@@ -431,54 +408,37 @@ $("#uploadSubmit").click(function(){
                                             // browser completed reading file - display it
                                         console.log(e.target.result)
                                         var privateKeyPemText = keyGen.getKey(e.target.result)
-                                
-                                        //var privateKeyPem = (keyGen.getPEM(privateKeyPem, "PKCS8PRV"))
+                                       
                                         var privateKey = keyGen.getKeyFromPlainPrivatePKCS8PEM(e.target.result)
-                                        var sessionID = KJUR.crypto.Cipher.decrypt(data, privateKey,"RSAOAEP")
-                                        console.log(sessionID)
-
-                                       var myString   = "https://www.titanesmedellin.com/";
-                                        var myPassword = "myPassword";
-
                                         
-
+                                        // symmetric key has been obtained from previous ajx request
+                                        var sessionID = KJUR.crypto.Cipher.decrypt(data, privateKey,"RSAOAEP")
+                                        // get the file we want to upload from a html input tag
+                                        var fileUpload = document.getElementById('fileUpload').files[0];
                                         reader.readAsText(fileUpload);
                                         reader.onload = function(e) {
-                                            // browser completed reading file - display it
-                                        console.log("file bytes:")
-                                
-                                        console.log(e)
+                                            // e.target.result => the bytes of the desired file from the file reader
 
-
-                                        var encrypted = sjcl.encrypt(sessionID, e.target.result)
-                                        var decrypted = sjcl.decrypt(sessionID, encrypted)
-                                      
-                                        var blob = new Blob([e.target.result], {type: "image/png"})
-                                        console.log("decrypted:")
-                                        console.log(decrypted)
-                                        saveAs(blob,"heart.png")
-                                        download(e.target.result, "pls.png", "image/png")
-                                        console.log(JSON.parse(encrypted).ct)
-                                        console.log(decrypted)
-
-                                        var fileCipherText =(encrypted)
-                                        var fileName = fileUpload.name
-                                        console.log(fileUpload)
-
-
-                                                                        var groupId = "{{groupID}}"
-                                                                        $.ajax(
-                                                            
-                                                                            options = {
-                                                                                
-                                                                                url :"./"+groupId+ "/encryptedFileUpload/"+fileName, // the endpoint
-                                                                                type : "POST", // http method
-                                                                                data:{encryptedFile:fileCipherText},
-                                                                                
-                                                                                // handle a successful response
-                                                                                success : function(data,status,xhr) {
-                                                                                
-                                                                                    console.log(data)
+                                            //encrypt the bytes from the file using the sjlc encrypt function
+                                            var encrypted = sjcl.encrypt(sessionID, e.target.result)
+                                            // make blob of encrypted data to transmit using ajax
+                                            var blob = new Blob([e.target.result], {type: "text"})
+                                            // explicitly call the encrypted text cypher text for claritys sake
+                                            var fileCipherText =(encrypted)
+                                            //name that file will be called on dropbox
+                                            var fileName = fileUpload.name
+                                            //the group to upload the file to
+                                            var groupId = "{{groupID}}"
+                                            $.ajax(
+                                                options = {
+                                                    url :"./"+groupId+ "/encryptedFileUpload/"+fileName, // the endpoint
+                                                    type : "POST", // http method
+                                                    data:{encryptedFile:fileCipherText},
+                                                
+                                                // handle a successful response
+                                                success : function(data,status,xhr) {
+                                                
+                                                    console.log(data)
                                                                                 
 
                                                                                     Swal.fire({
@@ -489,55 +449,15 @@ $("#uploadSubmit").click(function(){
                                                                                     }).then((result) => {
                                                                                         if (result.value) {
 
-                                                                                            var privKeyFile = document.getElementById('privateKey').files[0];
-                                                                                            var reader = new FileReader();
-                                                                                                reader.readAsText(privKeyFile);
-                                                                                                reader.onload = function(e) {
-                                                                                                    // browser completed reading file - display it
-                                                                                                console.log(e.target.result)
-                                                                                                var privateKeyPemText = keyGen.getKey(e.target.result)
-                                                                                        
-                                                                                                //var privateKeyPem = (keyGen.getPEM(privateKeyPem, "PKCS8PRV"))
-                                                                                                var privateKey = keyGen.getKeyFromPlainPrivatePKCS8PEM(e.target.result)
-                                                                                                var sessionID = KJUR.crypto.Cipher.decrypt(data, privateKey,"RSAOAEP")
-                                                                                                console.log(sessionID)
+                                                
 
-                                                                                            
-
-                                                                                                reader.readAsText(fileUpload);
-                                                                                                reader.onload = function(e) {
-                                                                                                    // browser completed reading file - display it
-                                                                                                console.log(e.target.result)
-                                                                                                var encrypted = sjcl.encrypt(sessionID, e.target.result)
-                                                                                                var decrypted = sjcl.decrypt(sessionID, encrypted)
-                                                                                                
-                                                                                                
-                                                                                                console.log(JSON.parse(encrypted).ct)
-                                                                                                console.log(decrypted)
-                                                                                                }
-
-                                                                                                // PROCESS
-                                                                                                
-                                                                                                
-                                                                                                
-                                                                                            
-                                                                                                
-                                                                                            //var newUrl = "groups/"+ data
-                                                                                            // $.get( newUrl,function(){});
-                                                                                            //go to dashboard view
-                                                                                            //window.location.replace(newUrl);
-                                                                                                }
+                                                    
                                                                                         }
                                                                                     })
 
-                                                                                    
-
-                                                                                    //Add the link somewhere, an appendChild statement will do.
-                                                                                    //Then run this
-                                                        //                            document.getElementById('someLink').click();
+                             
                                                                             },
-                                                                        
-                                                        //                         // handle a non-successful response
+                                                  
                                                                         error : function(xhr,errmsg,err) {
                                                                                     Swal.fire({
                                                                                     type: 'error',

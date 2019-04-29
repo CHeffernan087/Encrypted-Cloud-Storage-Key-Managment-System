@@ -8,6 +8,40 @@ class GroupMembers(models.Model):
     groupID = models.CharField(max_length=500)
     groupName = models.CharField(max_length=500)
 
+class Group(models.Model):
+    groupID = models.AutoField(primary_key=True)
+    groupName = models.CharField(max_length=500)
+    sessionKey = models.CharField(max_length=500)
+
+
+class User(models.Model):
+    publicKey = models.CharField(max_length=3000)
+    userId = models.AutoField(primary_key=True)
+
+    def print(self):
+        print("User : "+str(self.userId))
+        print("")
+        print(self.publicKey)
+
+class Request(models.Model):
+    publicKey = models.CharField(max_length=3000)
+    groupID = models.CharField(max_length=500)
+    groupName = models.CharField(max_length=500)
+    requestId = models.AutoField(primary_key=True)
+
+
+class Content(models.Model):
+    fileName = models.CharField(max_length=3000)
+    fileId = models.AutoField(primary_key=True)
+    groupId = models.IntegerField()
+
+
+
+
+
+#------ Group API ------------
+
+
 
 def isInGroup(groupId,userId):
     set = GroupMembers.objects.filter(groupID = groupId)
@@ -17,10 +51,7 @@ def isInGroup(groupId,userId):
             return True
     return False
 
-class Group(models.Model):
-    groupID = models.AutoField(primary_key=True)
-    groupName = models.CharField(max_length=500)
-    sessionKey = models.CharField(max_length=500)
+
 
 def getGroup(groupID):
     set = Group.objects.filter(groupID = groupID)
@@ -39,16 +70,6 @@ def getGroupName(groupId):
     for i in set:
         resultSet.append(i)
     return resultSet[0].groupName
-
-def printGroupMembers(groupId):
-    set = GroupMembers.objects.filter(groupID = groupId)
-    i=0
-    for member in set:
-        user = getUser(member.publicKey)
-        i = i+1
-        print("Member : "+str(i))
-        print("userID :"+str(user.userId))
-        print("pubKey :" + str(user.publicKey))
 
 def printGroups():
     set = Group.objects.all()
@@ -73,16 +94,34 @@ def deleteGroup(groupID):
     groups = Group.objects.filter(groupID = groupID)
     for group in groups:
         group.delete()
-    
 
-class User(models.Model):
-    publicKey = models.CharField(max_length=3000)
-    userId = models.AutoField(primary_key=True)
+#------ Group API ------------
+#------ Group  Member API ------------
 
-    def print(self):
-        print("User : "+str(self.userId))
-        print("")
-        print(self.publicKey)
+
+def printGroupMembers(groupId):
+    set = GroupMembers.objects.filter(groupID = groupId)
+    i=0
+    for member in set:
+        user = getUser(member.publicKey)
+        i = i+1
+        print("Member : "+str(i))
+        print("userID :"+str(user.userId))
+        print("pubKey :" + str(user.publicKey))
+
+
+
+def removeUserFromGroup(groupId, userId):
+    publicKey = getUserPublicKey(userId)
+    set = GroupMembers.objects.filter(groupID = groupId)
+    for i in set:
+        user = getUser(i.publicKey)
+        if user.userId == userId:
+            i.delete()
+
+
+#------ Group  Member sAPI ------------  
+#------ User API ------------
 
 def getUserPublicKey(userId):
     uSet = User.objects.filter(userId = userId)
@@ -111,27 +150,6 @@ def getUser(publicKey):
     return None
 
 
-def removeUserFromGroup(groupId, userId):
-    publicKey = getUserPublicKey(userId)
-    set = GroupMembers.objects.filter(groupID = groupId)
-    for i in set:
-        user = getUser(i.publicKey)
-        if user.userId == userId:
-            i.delete()
-
-def getGroups(publicKey):
-    userSet = User.objects.filter(publicKey = publicKey)
-    userList = []
-    for i in userSet:
-        userList.append(i)
-    user = userList[0]
-    
-    set = Group.objects.get()
-    groupList= []
-    for group in set:
-        if(group.publicKey == user.publicKey):
-            groupList.append(group)
-
 def getUserGroups(userId):
     set = GroupMembers.objects.all()
     groupList = []
@@ -153,21 +171,24 @@ def userExists(publicKey):
     return True
 
 
-class File(models.Model):
-    title = models.CharField(max_length=500)
-    groupID = models.CharField(max_length=500)
+def getGroups(publicKey):
+    userSet = User.objects.filter(publicKey = publicKey)
+    userList = []
+    for i in userSet:
+        userList.append(i)
+    user = userList[0]
+    
+    set = Group.objects.get()
+    groupList= []
+    for group in set:
+        if(group.publicKey == user.publicKey):
+            groupList.append(group)
+
+#------ User API ------------
+
     
 
-class Request(models.Model):
-    publicKey = models.CharField(max_length=3000)
-    groupID = models.CharField(max_length=500)
-    groupName = models.CharField(max_length=500)
-    requestId = models.AutoField(primary_key=True)
 
-class Content(models.Model):
-    fileName = models.CharField(max_length=3000)
-    fileId = models.AutoField(primary_key=True)
-    groupId = models.IntegerField()
 
 def getContent(resourceId):
     set = Content.objects.filter(fileId = resourceId)
@@ -188,6 +209,10 @@ def getRequest(requestId):
     for el in set:
         returnSet.append(el)
     return returnSet[0]
+
+
+
+#------ Request API ------------
 
 def removeRequest(requestId):
     set = Request.objects.filter(requestId = requestId)

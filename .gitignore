@@ -1,0 +1,8 @@
+venv/
+*.pyc
+.idea/
+keyManagmentSystem/.vs/*
+desktop.ini
+.vscode/
+.DS_Store
+settings.py

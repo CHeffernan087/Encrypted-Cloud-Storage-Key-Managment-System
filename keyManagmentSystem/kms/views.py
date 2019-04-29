@@ -9,7 +9,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
-from .forms import UploadFileForm
+# from django.forms import UploadFileForm
 from kms.models import *
 
 import dropbox
@@ -19,12 +19,13 @@ from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES, PKCS1_OAEP
 import json
 
+from django.conf import settings
+
 
 print(inspect.getfile(inspect.currentframe())) # script filename (usually with path))
 path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) # script directory
 # Create your views here.
 
-#0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su
 
 
 # def index(request):
@@ -35,10 +36,9 @@ def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            #handle_uploaded_file(request.FILES['file'])
-            print("valid form bayyyyyyyyby")
-
-            client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
+         
+            #handle_uploaded_file(request.FILES['file']
+            client  = dropbox.Dropbox(settings.DROPBOX_API_KEY);
             p = client.users_get_current_account()
             print(p.email)
             file = open("test.txt")
@@ -93,20 +93,6 @@ def acceptKey(request):
 
     clientPubKey = RSA.import_key(keyPem)
 
-    # session_key = get_random_bytes(16)
-
-    # print("\n\n-------- Session Key ---------\n")
-    # print(session_key.hex())
-    # print("\n-------- Session Key ---------\n\n")
-
-    # # Encrypt the session key with the public RSA key
-    # cipher_rsa = PKCS1_OAEP.new(clientPubKey)
-    # secretSession = cipher_rsa.encrypt(session_key)
-
-    # print("\n\n-------- Encrypted Secret ---------\n")
-    # print(secretSession.hex())
-    # print("\n-------- Encrypted Secret ---------\n\n")
-    # data = secretSession.hex()
     user = getUser(keyPem)
     data = user.userId
     response = HttpResponse(data,content_type='application/json')
@@ -260,49 +246,42 @@ def returnSessionKey(request,userId,groupId):
 
 
 def encryptedFileUpload(request,userId,groupId,fileName):
-    print("Querying Dictionary:")
+ 
     
-    print("\n\n-------- Encrypted File Cypher Text ---------\n")
-    print(request.POST.get('encryptedFile'))
-    print("\n\n-------- Encrypted File Cypher Text ---------\n")
+    # check incoming request is indeed a POST request 
     if request.method == 'POST':
-       
-    #     #handle_uploaded_file(request.FILES['file'])
-    #     print("valid form bayyyyyyyyby")
-
-    #     client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
-    #     p = client.users_get_current_account()
-    #     print(p.email)
-    #     file = open("test.txt")
-
-    
-    #     bytes = request.FILES['myfile'].read()
-    #     title = "/" +request.FILES['myfile'].name
-    #     client.files_upload(bytes, title, mute = True)
+        # print out the encrypted cypher text (for debugging)
+        print("\n\n-------- Encrypted File Cypher Text ---------\n")
+        print(request.POST.get('encryptedFile'))
+        print("\n\n-------- Encrypted File Cypher Text ---------\n")
+        
+        # files will be stored on dropbox as .txt files containing the cypher text so it is 
+        # necessary to strip the actual extension off although this is retained in DB for 
+        # locating the original file on the drive
         fileExtensionIndex = fileName.find('.')
         title = fileName[:fileExtensionIndex]+".txt"
+        # open a text file in the python server and write the encrypted text to it. save that file (.close())
         f= open(title,"w+")
         f.write(request.POST.get('encryptedFile'))
         f.close()
-
-        
-        client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
+        # set up dropbox API authentication credentials 
+        client  = dropbox.Dropbox(settings.DROPBOX_API_KEY)
         p = client.users_get_current_account()
-        print("Upload to google drive complete..")
-
-
+        # open file , read the bytes from that file and prepare to send to dropbox
         f= open(title)
         bytes = f.read().encode()
         title = "/" +fileName[:fileExtensionIndex]+".txt"
+        #command to upload files to drop box
         client.files_upload(bytes, title, mute = True)
-        
+        # keep a record of the file submission and what group it was for in the DB
         c = Content()
         c.groupId = groupId
         c.fileName = fileName
         c.save()
-
-        
-        return HttpResponse(request.POST.get('encryptedFile'))
+        # return successful response to the client
+        response = HttpResponse(data,content_type='application/json')
+        response.status_code = 200
+        return HttpResponse(response)   
     else:
         form = UploadFileForm()
     return render(request, './index.html', {})
@@ -317,7 +296,7 @@ def downloadResource(request,userId,groupId,resourceId):
 
     
 
-    client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
+    client  = dropbox.Dropbox(settings.DROPBOX_API_KEY)
     p = client.users_get_current_account()
     print(p.email)
     metadata, res  = client.files_download('/'+title)
@@ -335,23 +314,24 @@ def downloadResource(request,userId,groupId,resourceId):
 
 
 def downloadEncryptedResource(request,userId,groupId,resourceId):
-    print("getting resource off of google drive")
+    # read the entry about that resouce that I had in the SQLite DB
+    # This will allow me to fetch the correct resource from dropbox.com
     c = getContent(resourceId)
+    # get specific info about the file from the database entry
     fileName = c.fileName
     fileExtensionIndex = fileName.find('.')
     title = fileName[:fileExtensionIndex]+".txt"
-    client  = dropbox.Dropbox('0Asgs_ev8WAAAAAAAAAAC0-q3yhO457uLv2Po_XlSDe2wICZoevQ8CYabOgJr-Su')
+    # configure dropbox credentials
+    client  = dropbox.Dropbox(settings.DROPBOX_API_KEY)
     p = client.users_get_current_account()
-    print(p.email)
+    # download the encrypted file off dropbox
     metadata, res  = client.files_download('/'+title)
-    print(metadata)
-    print(res)
+    #write the data to a byte string from the dropbox response object
     data = b""
     for i in res:
         data  = data + i
-    print(data)
+    # return the data with a 200 success code
     retObj = {'data':data}
-
     response = HttpResponse(data.decode("utf-8"),content_type='application/json')
     response.status_code = 200
     return HttpResponse(response)
