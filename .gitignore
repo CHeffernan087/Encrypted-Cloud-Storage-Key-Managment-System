@@ -6,3 +6,4 @@ desktop.ini
 .vscode/
 .DS_Store
 keyManagmentSystem/keyManagmentSystem/settings.py
+local_settings.py
