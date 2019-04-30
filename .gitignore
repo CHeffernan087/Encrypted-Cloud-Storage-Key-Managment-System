@@ -5,4 +5,4 @@ keyManagmentSystem/.vs/*
 desktop.ini
 .vscode/
 .DS_Store
-settings.py
+keyManagmentSystem/keyManagmentSystem/settings.py
