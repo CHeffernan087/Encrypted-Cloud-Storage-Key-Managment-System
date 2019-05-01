@@ -24,6 +24,7 @@
 					{% for group in groups %}
                     <div style = "height:5vh"></div>
                     <a href = "getGroup/{{group.groupID}}">
+                       
                         <div class = "panel" style ="cursor:pointer;height:15vh; width:40vw; background-color:white; border-radius:20px; box-shadow: 10px 10px 8px #888888;margin-left:5vw;position:relative">
                             <div style = "  margin: 0;position: absolute;top: 50%;transform: translate(0%, -50%);height:100%;width:100%">
                                 
@@ -31,17 +32,26 @@
                                 <div style = "float:left;color:#0068AE;height:100%;width:60%;font-size:2em">
                                     <div style = "height:40%"></div>
                                     <div>{{group.groupName}}</div>
+                                    <p>
+                                    
+                                    </p>
                                     <div style = "height:20%"></div>
                                 </div>
                                 <div style = "float:left;height:100%;width:5%;"></div>
                                 <div style = "float:right;width:20%;height:100%">
                                     <div style = "float:right;width:20%;height:100%;position:relative"></div>
                                     <div style = "float:right;width:80%;height:100%;position:relative">
-                                        <div style = "height:20%;width100%"></div>
+                                        
                                       
                                         <a href = "requestAccess/{{group.groupID}}">
-                                            
+                                             {% if group not in specificGroups %}
+                                            <div style = "height:20%;width100%"></div>
                                             <div style = "height:60%;width:100%;border-radius:10px;background-color:#0068AE;color:white;font-size:1.75em;line-height: 60%;text-align: center;"><div style = "height:30%"></div>Join</div>
+                                            {% else %}
+                                            <div style = "margin: 0;position: absolute;top: 50%;transform: translate(0%, -50%);width:100%">
+                                                <div style = "margin:auto;height:5vh;width:5vh;background-color:#3cb8e9;border-radius:100%"></div>
+                                            </div>
+                                            {% endif %}
                                         </a>
                                     </div>
                                 </div>

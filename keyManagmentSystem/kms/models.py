@@ -151,7 +151,8 @@ def getUser(publicKey):
 
 
 def getUserGroups(userId):
-    set = GroupMembers.objects.all()
+    pk = getUserPublicKey(userId)
+    set = GroupMembers.objects.filter(publicKey = pk)
     groupList = []
     for group in set:
         mGroup = getGroup(group.groupID)

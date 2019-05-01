@@ -142,12 +142,12 @@ def getGroups(request,userId):
     for group in groups:
         groupList.append(group)
         for spec in specificGroups:
-            if(spec.groupID == group.groupID):
+            if(spec.groupName == group.groupName):
                 contained.append(True)
         contained.append(False)
     print("contained")
     print(contained)
-    context = {'groups':groupList,'publicKey':publicKey,'userId':userId,'contained':contained}
+    context = {'groups':groupList,'publicKey':publicKey,'userId':userId,'contained':contained, 'specificGroups':specificGroups}
     return render(request, './dashboard.html', context)
 
 
